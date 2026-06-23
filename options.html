@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QuickSelect Translate Options</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <h1 data-i18n="extensionName">QuickSelect Translate</h1>
+        <p data-i18n="optionsIntro">No build step, no framework. Configure the selected-text translator here.</p>
+      </header>
+
+      <section class="panel">
+        <h2 data-i18n="languagesSection">Languages</h2>
+        <div class="grid">
+          <label>
+            <span data-i18n="sourceLanguageLabel">Source language</span>
+            <select id="sourceLang"></select>
+          </label>
+          <label>
+            <span data-i18n="targetLanguageLabel">Target language</span>
+            <select id="targetLang"></select>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="selectionUiSection">Selection UI</h2>
+        <label class="check">
+          <input id="showSelectionButton" type="checkbox">
+          <span data-i18n="showSelectionButton">Show a floating translate button after selecting text</span>
+        </label>
+        <label class="check">
+          <input id="translateImmediately" type="checkbox">
+          <span data-i18n="translateImmediately">Translate immediately after selecting text</span>
+        </label>
+        <div class="grid compact">
+          <label>
+            <span data-i18n="horizontalOffset">Horizontal offset</span>
+            <input id="buttonOffsetX" type="number" min="0" max="40" step="1">
+          </label>
+          <label>
+            <span data-i18n="verticalOffset">Vertical offset</span>
+            <input id="buttonOffsetY" type="number" min="0" max="40" step="1">
+          </label>
+          <label>
+            <span data-i18n="maxTextLength">Max text length</span>
+            <input id="maxTextLength" type="number" min="100" max="15000" step="100">
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="pageTranslationSection">Page Translation</h2>
+        <label class="check">
+          <input id="openPageTranslationInCurrentTab" type="checkbox">
+          <span data-i18n="openPageTranslationInCurrentTab">Open page translation in the current tab</span>
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="appearanceSection">Appearance</h2>
+        <div class="grid">
+          <label>
+            <span data-i18n="themeLabel">Theme</span>
+            <select id="themeMode">
+              <option value="auto" data-i18n="themeAuto">Auto</option>
+              <option value="light" data-i18n="themeLight">Light</option>
+              <option value="dark" data-i18n="themeDark">Dark</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="translationFontSize">Translation font size</span>
+            <input id="fontSize" type="number" min="12" max="22" step="1">
+          </label>
+        </div>
+      </section>
+
+      <footer>
+        <button id="saveButton" type="button" data-i18n="saveButton">Save</button>
+        <button id="resetButton" type="button" class="secondary" data-i18n="resetDefaultsButton">Reset defaults</button>
+        <span id="statusText"></span>
+      </footer>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

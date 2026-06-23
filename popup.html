@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QuickSelect Translate</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="popup">
+      <header class="header">
+        <div>
+          <h1 data-i18n="extensionName">QuickSelect Translate</h1>
+          <p data-i18n="popupSubtitle">Translate selected or typed text.</p>
+        </div>
+        <button id="optionsButton" class="icon-button" type="button" title="Options" aria-label="Options" data-i18n-title="optionsLabel" data-i18n-aria-label="optionsLabel">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M19.4 15a1.8 1.8 0 0 0 .4 2l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.8 1.8 0 0 0-2-.4 1.8 1.8 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.8 1.8 0 0 0-1-1.6 1.8 1.8 0 0 0-2 .4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.8 1.8 0 0 0 .4-2 1.8 1.8 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.8 1.8 0 0 0 1.6-1 1.8 1.8 0 0 0-.4-2l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.8 1.8 0 0 0 2 .4 1.8 1.8 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.8 1.8 0 0 0 1 1.6 1.8 1.8 0 0 0 2-.4l.1-.1A2 2 0 1 1 20 7l-.1.1a1.8 1.8 0 0 0-.4 2 1.8 1.8 0 0 0 1.6 1h.1a2 2 0 1 1 0 4h-.1a1.8 1.8 0 0 0-1.7 1Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="field-header">
+        <label class="label" for="sourceText" data-i18n="textLabel">Text</label>
+        <button id="speakSourceButton" class="icon-button inline-button" type="button" title="Speak source text" aria-label="Speak source text" data-i18n-title="speakSourceText" data-i18n-aria-label="speakSourceText"></button>
+      </div>
+      <textarea id="sourceText" rows="5" placeholder="Type text, or select text on a page and open this popup." data-i18n-placeholder="sourceTextPlaceholder"></textarea>
+
+      <div class="row">
+        <label>
+          <span data-i18n="sourceLangLabel">From</span>
+          <select id="sourceLang"></select>
+        </label>
+        <label>
+          <span data-i18n="targetLangLabel">To</span>
+          <select id="targetLang"></select>
+        </label>
+      </div>
+
+      <button id="translateButton" class="primary" type="button" data-i18n="translateButton">Translate</button>
+
+      <section id="resultBox" class="result" hidden>
+        <div class="result-header">
+          <span id="detectedLang"></span>
+        </div>
+        <div class="result-row">
+          <p id="resultText"></p>
+          <div class="result-actions">
+            <button id="speakResultButton" class="icon-button inline-button" type="button" title="Speak translation" aria-label="Speak translation" data-i18n-title="speakTranslation" data-i18n-aria-label="speakTranslation"></button>
+            <button id="copyButton" class="icon-button inline-button" type="button" title="Copy translation" aria-label="Copy translation" data-i18n-title="copyTranslation" data-i18n-aria-label="copyTranslation"></button>
+          </div>
+        </div>
+        <div id="candidateText" hidden></div>
+      </section>
+
+      <p id="statusText" class="status"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

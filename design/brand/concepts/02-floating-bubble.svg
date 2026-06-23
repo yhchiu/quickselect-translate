@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240" viewBox="0 0 720 240" role="img" aria-labelledby="title desc">
+  <title id="title">Floating Bubble brand-mark concept</title>
+  <desc id="desc">A floating translation bubble symbol with Simple Translate JS wordmark.</desc>
+  <defs>
+    <linearGradient id="bg" x1="38" y1="28" x2="150" y2="164" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1d4ed8"/>
+      <stop offset=".62" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#0f172a" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="720" height="240" rx="24" fill="#ffffff"/>
+  <g transform="translate(44 28)" filter="url(#shadow)">
+    <circle cx="92" cy="86" r="70" fill="url(#bg)"/>
+    <path d="M63 132c11 12 23 17 39 17-9 11-21 17-38 19 5-10 5-21-1-36Z" fill="#14b8a6"/>
+    <circle cx="92" cy="86" r="48" fill="#eff6ff" opacity=".16"/>
+    <text x="61" y="95" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="900" fill="#ffffff">A</text>
+    <text x="104" y="97" font-family="'Noto Sans CJK TC', 'Microsoft JhengHei', Arial, sans-serif" font-size="37" font-weight="900" fill="#facc15">文</text>
+    <path d="M74 112h36" stroke="#bfdbfe" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(268 76)">
+    <text x="0" y="0" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="800" fill="#0f172a">Simple Translate</text>
+    <text x="0" y="48" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="#2563eb">JS</text>
+    <text x="48" y="48" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="600" fill="#64748b">Floating Bubble</text>
+  </g>
+</svg>

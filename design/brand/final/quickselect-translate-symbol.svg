@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">QuickSelect Translate symbol</title>
+  <desc id="desc">A 文 Swap symbol for QuickSelect Translate.</desc>
+  <defs>
+    <linearGradient id="bg" x1="36" y1="36" x2="220" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <filter id="shadow" x="-18%" y="-18%" width="136%" height="142%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#0f172a" flood-opacity=".16"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <rect x="16" y="16" width="224" height="224" rx="54" fill="url(#bg)"/>
+    <circle cx="88" cy="112" r="54" fill="#eff6ff"/>
+    <circle cx="168" cy="138" r="54" fill="#dbeafe"/>
+    <text x="60" y="140" font-family="Inter, Arial, sans-serif" font-size="82" font-weight="900" fill="#1d4ed8">A</text>
+    <text x="132" y="164" font-family="'Noto Sans CJK TC', 'Microsoft JhengHei', Arial, sans-serif" font-size="72" font-weight="900" fill="#0f172a">文</text>
+    <path d="M105 68h68l-16-16M151 193H83l16 16" fill="none" stroke="#facc15" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
