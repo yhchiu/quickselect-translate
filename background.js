@@ -20,7 +20,36 @@ const MENU_IDS = Object.freeze({
 });
 
 const TARGET_LANG_FALLBACK = "zh-TW";
-const SUPPORTED_BROWSER_TARGET_LANGS = new Set(["en", "ja", "ko", "fr", "de", "es", "it", "pt", "ru", "vi", "th", "id"]);
+const SUPPORTED_BROWSER_TARGET_LANGS = new Set([
+  "ar",
+  "bn",
+  "cs",
+  "nl",
+  "en",
+  "tl",
+  "fr",
+  "de",
+  "el",
+  "he",
+  "hi",
+  "id",
+  "it",
+  "ja",
+  "ko",
+  "ms",
+  "fa",
+  "pl",
+  "pt",
+  "ro",
+  "ru",
+  "es",
+  "sv",
+  "th",
+  "tr",
+  "uk",
+  "ur",
+  "vi"
+]);
 
 const memoryCache = new Map();
 
@@ -209,6 +238,8 @@ function resolveBrowserTargetLang(lang) {
   }
 
   const baseLang = normalized.split("-")[0];
+  if (baseLang === "fil") return "tl";
+  if (baseLang === "iw") return "he";
   return SUPPORTED_BROWSER_TARGET_LANGS.has(baseLang) ? baseLang : TARGET_LANG_FALLBACK;
 }
 

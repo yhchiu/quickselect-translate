@@ -2,21 +2,68 @@
 
 const LANGUAGES = [
   ["auto", "languageAuto", "Auto detect"],
-  ["zh-TW", "languageZhTw", "Chinese (Traditional)"],
+  ["ar", "languageAr", "Arabic"],
+  ["bn", "languageBn", "Bengali"],
   ["zh-CN", "languageZhCn", "Chinese (Simplified)"],
+  ["zh-TW", "languageZhTw", "Chinese (Traditional)"],
+  ["cs", "languageCs", "Czech"],
+  ["nl", "languageNl", "Dutch"],
   ["en", "languageEn", "English"],
-  ["ja", "languageJa", "Japanese"],
-  ["ko", "languageKo", "Korean"],
+  ["tl", "languageTl", "Filipino"],
   ["fr", "languageFr", "French"],
   ["de", "languageDe", "German"],
-  ["es", "languageEs", "Spanish"],
+  ["el", "languageEl", "Greek"],
+  ["he", "languageHe", "Hebrew"],
+  ["hi", "languageHi", "Hindi"],
+  ["id", "languageId", "Indonesian"],
   ["it", "languageIt", "Italian"],
+  ["ja", "languageJa", "Japanese"],
+  ["ko", "languageKo", "Korean"],
+  ["ms", "languageMs", "Malay"],
+  ["fa", "languageFa", "Persian"],
+  ["pl", "languagePl", "Polish"],
   ["pt", "languagePt", "Portuguese"],
+  ["ro", "languageRo", "Romanian"],
   ["ru", "languageRu", "Russian"],
-  ["vi", "languageVi", "Vietnamese"],
+  ["es", "languageEs", "Spanish"],
+  ["sv", "languageSv", "Swedish"],
   ["th", "languageTh", "Thai"],
-  ["id", "languageId", "Indonesian"]
+  ["tr", "languageTr", "Turkish"],
+  ["uk", "languageUk", "Ukrainian"],
+  ["ur", "languageUr", "Urdu"],
+  ["vi", "languageVi", "Vietnamese"]
 ];
+
+const SPEECH_LANG_ALIASES = Object.freeze({
+  ar: "ar-SA",
+  bn: "bn-BD",
+  cs: "cs-CZ",
+  nl: "nl-NL",
+  en: "en-US",
+  tl: "fil-PH",
+  fr: "fr-FR",
+  de: "de-DE",
+  el: "el-GR",
+  he: "he-IL",
+  hi: "hi-IN",
+  id: "id-ID",
+  it: "it-IT",
+  ja: "ja-JP",
+  ko: "ko-KR",
+  ms: "ms-MY",
+  fa: "fa-IR",
+  pl: "pl-PL",
+  pt: "pt-BR",
+  ro: "ro-RO",
+  ru: "ru-RU",
+  es: "es-ES",
+  sv: "sv-SE",
+  th: "th-TH",
+  tr: "tr-TR",
+  uk: "uk-UA",
+  ur: "ur-PK",
+  vi: "vi-VN"
+});
 
 const TARGET_LANGUAGES = [
   ["browser", "languageAutoBrowser", "Auto (Browser language)"],
@@ -283,7 +330,7 @@ function speakText(text, lang) {
 function normalizeSpeechLang(lang) {
   const value = String(lang || "").trim();
   if (!value || value === "auto" || value === "browser") return getBrowserSpeechLang();
-  return value;
+  return SPEECH_LANG_ALIASES[value] || value;
 }
 
 function getBrowserSpeechLang() {
@@ -322,6 +369,7 @@ if (globalThis.__QST_TEST__) {
   globalThis.__QST_POPUP_TESTS__ = {
     LANGUAGES,
     TARGET_LANGUAGES,
+    SPEECH_LANG_ALIASES,
     THEME_MODES,
     t,
     formatFallback,

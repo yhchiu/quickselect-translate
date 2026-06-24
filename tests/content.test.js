@@ -144,6 +144,10 @@ test("speech helpers select matching voices and speak trimmed text", async () =>
   assert.equal(context.window.speechSynthesis.spoken[0].voice.name, "English");
   assert.equal(api.normalizeSpeechLang("auto"), "en-US");
   assert.equal(api.normalizeSpeechLang("browser"), "en-US");
+  assert.equal(api.normalizeSpeechLang("tl"), "fil-PH");
+  assert.equal(api.normalizeSpeechLang("he"), "he-IL");
+  assert.equal(api.normalizeSpeechLang("uk"), "uk-UA");
+  assert.equal(api.normalizeSpeechLang("fa"), "fa-IR");
 });
 
 test("runtime message returns selected text and triggers selection translation", async () => {

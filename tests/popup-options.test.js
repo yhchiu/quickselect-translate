@@ -27,6 +27,39 @@ const POPUP_IDS = [
   "optionsButton"
 ];
 
+const EXPECTED_LANGUAGE_VALUES = [
+  "ar",
+  "bn",
+  "zh-CN",
+  "zh-TW",
+  "cs",
+  "nl",
+  "en",
+  "tl",
+  "fr",
+  "de",
+  "el",
+  "he",
+  "hi",
+  "id",
+  "it",
+  "ja",
+  "ko",
+  "ms",
+  "fa",
+  "pl",
+  "pt",
+  "ro",
+  "ru",
+  "es",
+  "sv",
+  "th",
+  "tr",
+  "uk",
+  "ur",
+  "vi"
+];
+
 async function loadPopup(runtimeMessageHandler) {
   const { chrome, calls } = createChromeMock({
     runtimeMessageHandler: runtimeMessageHandler || (message => {
@@ -42,7 +75,7 @@ async function loadPopup(runtimeMessageHandler) {
   return { api: context.__QST_POPUP_TESTS__, context, document, elements, calls };
 }
 
-test("popup target language includes browser auto option and source language does not", async () => {
+test("popup language selectors expose the expanded language list", async () => {
   const { elements } = await loadPopup();
 
   const sourceValues = elements.get("#sourceLang").children.map(child => child.value);
@@ -51,7 +84,8 @@ test("popup target language includes browser auto option and source language doe
     value: child.value
   }));
 
-  assert.equal(sourceValues.includes("browser"), false);
+  assert.deepEqual(sourceValues, ["auto", ...EXPECTED_LANGUAGE_VALUES]);
+  assert.deepEqual(targetOptions.map(option => option.value), ["browser", ...EXPECTED_LANGUAGE_VALUES]);
   assert.deepEqual(targetOptions[0], { label: "Auto (Browser language)", value: "browser" });
 });
 
@@ -118,6 +152,8 @@ test("popup speech reports unsupported browser and otherwise speaks", async () =
   api.speakText("hello", "en-US");
   assert.equal(context.window.speechSynthesis.spoken[0].text, "hello");
   assert.equal(api.normalizeSpeechLang("browser"), "en-US");
+  assert.equal(api.normalizeSpeechLang("tl"), "fil-PH");
+  assert.equal(api.normalizeSpeechLang("he"), "he-IL");
 
   delete context.window.SpeechSynthesisUtterance;
   delete context.SpeechSynthesisUtterance;
@@ -152,7 +188,8 @@ test("options readForm clamps numeric settings and reset restores defaults", asy
     label: child.textContent,
     value: child.value
   }));
-  assert.equal(sourceValues.includes("browser"), false);
+  assert.deepEqual(sourceValues, ["auto", ...EXPECTED_LANGUAGE_VALUES]);
+  assert.deepEqual(targetOptions.map(option => option.value), ["browser", ...EXPECTED_LANGUAGE_VALUES]);
   assert.deepEqual(targetOptions[0], { label: "Auto (Browser language)", value: "browser" });
 
   elements.get("#sourceLang").value = "auto";

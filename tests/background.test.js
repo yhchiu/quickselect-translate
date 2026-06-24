@@ -144,7 +144,14 @@ test("browser target language maps Chinese variants and unsupported languages", 
 
   assert.equal(api.resolveBrowserTargetLang("zh-HK"), "zh-TW");
   assert.equal(api.resolveBrowserTargetLang("zh-Hans-CN"), "zh-CN");
-  assert.equal(api.resolveBrowserTargetLang("nl-NL"), "zh-TW");
+  assert.equal(api.resolveBrowserTargetLang("fil-PH"), "tl");
+  assert.equal(api.resolveBrowserTargetLang("he-IL"), "he");
+  assert.equal(api.resolveBrowserTargetLang("iw-IL"), "he");
+  assert.equal(api.resolveBrowserTargetLang("pl-PL"), "pl");
+  assert.equal(api.resolveBrowserTargetLang("uk-UA"), "uk");
+  assert.equal(api.resolveBrowserTargetLang("ar-SA"), "ar");
+  assert.equal(api.resolveBrowserTargetLang("nl-NL"), "nl");
+  assert.equal(api.resolveBrowserTargetLang("fi-FI"), "zh-TW");
   assert.equal(api.resolveTargetLang("auto"), "zh-TW");
 });
 

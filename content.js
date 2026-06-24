@@ -18,6 +18,36 @@ const THEME_MODES = new Set(["auto", "light", "dark"]);
 const FONT_SIZE_MIN = 12;
 const FONT_SIZE_MAX = 22;
 const DEFAULT_FONT_SIZE = 16;
+const SPEECH_LANG_ALIASES = Object.freeze({
+  ar: "ar-SA",
+  bn: "bn-BD",
+  cs: "cs-CZ",
+  nl: "nl-NL",
+  en: "en-US",
+  tl: "fil-PH",
+  fr: "fr-FR",
+  de: "de-DE",
+  el: "el-GR",
+  he: "he-IL",
+  hi: "hi-IN",
+  id: "id-ID",
+  it: "it-IT",
+  ja: "ja-JP",
+  ko: "ko-KR",
+  ms: "ms-MY",
+  fa: "fa-IR",
+  pl: "pl-PL",
+  pt: "pt-BR",
+  ro: "ro-RO",
+  ru: "ru-RU",
+  es: "es-ES",
+  sv: "sv-SE",
+  th: "th-TH",
+  tr: "tr-TR",
+  uk: "uk-UA",
+  ur: "ur-PK",
+  vi: "vi-VN"
+});
 const SETTING_KEYS = new Set([
   "sourceLang",
   "targetLang",
@@ -521,7 +551,7 @@ function stopSpeaking() {
 function normalizeSpeechLang(lang) {
   const value = String(lang || "").trim();
   if (!value || value === "auto" || value === "browser") return getBrowserSpeechLang();
-  return value;
+  return SPEECH_LANG_ALIASES[value] || value;
 }
 
 function getBrowserSpeechLang() {
@@ -626,6 +656,7 @@ if (globalThis.__QST_TEST__) {
     STJ_STATE,
     FLOATING_BUTTON_TTL_MS,
     TRANSLATION_PANEL_TTL_MS,
+    SPEECH_LANG_ALIASES,
     handleRuntimeMessage,
     t,
     formatFallback,

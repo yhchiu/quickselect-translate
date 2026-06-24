@@ -17,20 +17,36 @@ const THEME_MODES = new Set(["auto", "light", "dark"]);
 
 const LANGUAGES = [
   ["auto", "languageAuto", "Auto detect"],
-  ["zh-TW", "languageZhTw", "Chinese (Traditional)"],
+  ["ar", "languageAr", "Arabic"],
+  ["bn", "languageBn", "Bengali"],
   ["zh-CN", "languageZhCn", "Chinese (Simplified)"],
+  ["zh-TW", "languageZhTw", "Chinese (Traditional)"],
+  ["cs", "languageCs", "Czech"],
+  ["nl", "languageNl", "Dutch"],
   ["en", "languageEn", "English"],
-  ["ja", "languageJa", "Japanese"],
-  ["ko", "languageKo", "Korean"],
+  ["tl", "languageTl", "Filipino"],
   ["fr", "languageFr", "French"],
   ["de", "languageDe", "German"],
-  ["es", "languageEs", "Spanish"],
+  ["el", "languageEl", "Greek"],
+  ["he", "languageHe", "Hebrew"],
+  ["hi", "languageHi", "Hindi"],
+  ["id", "languageId", "Indonesian"],
   ["it", "languageIt", "Italian"],
+  ["ja", "languageJa", "Japanese"],
+  ["ko", "languageKo", "Korean"],
+  ["ms", "languageMs", "Malay"],
+  ["fa", "languageFa", "Persian"],
+  ["pl", "languagePl", "Polish"],
   ["pt", "languagePt", "Portuguese"],
+  ["ro", "languageRo", "Romanian"],
   ["ru", "languageRu", "Russian"],
-  ["vi", "languageVi", "Vietnamese"],
+  ["es", "languageEs", "Spanish"],
+  ["sv", "languageSv", "Swedish"],
   ["th", "languageTh", "Thai"],
-  ["id", "languageId", "Indonesian"]
+  ["tr", "languageTr", "Turkish"],
+  ["uk", "languageUk", "Ukrainian"],
+  ["ur", "languageUr", "Urdu"],
+  ["vi", "languageVi", "Vietnamese"]
 ];
 
 const TARGET_LANGUAGES = [
