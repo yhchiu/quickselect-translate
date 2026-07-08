@@ -81,6 +81,7 @@ const sourceText = $("#sourceText");
 const sourceLang = $("#sourceLang");
 const targetLang = $("#targetLang");
 const translateButton = $("#translateButton");
+const openGoogleTranslateButton = $("#openGoogleTranslateButton");
 const resultBox = $("#resultBox");
 const resultText = $("#resultText");
 const candidateText = $("#candidateText");
@@ -115,6 +116,7 @@ async function init() {
   }
 
   translateButton.addEventListener("click", translate);
+  openGoogleTranslateButton.addEventListener("click", openInGoogleTranslate);
   sourceText.addEventListener("keydown", event => {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") translate();
   });
@@ -230,6 +232,21 @@ async function translate() {
   resultBox.hidden = false;
   lastResult = result;
   showStatus("");
+}
+
+async function openInGoogleTranslate() {
+  const text = sourceText.value.trim();
+  if (!text) {
+    showStatus(t("statusEnterText", "Enter text to translate."), true);
+    return;
+  }
+
+  await chrome.runtime.sendMessage({
+    type: "STJ_OPEN_GOOGLE_TRANSLATE",
+    text,
+    sourceLang: sourceLang.value,
+    targetLang: targetLang.value
+  });
 }
 
 function showStatus(message, isError = false) {
@@ -380,6 +397,7 @@ if (globalThis.__QST_TEST__) {
     sanitizeThemeMode,
     sanitizeFontSize,
     translate,
+    openInGoogleTranslate,
     showStatus,
     copyText,
     showCopySuccess,

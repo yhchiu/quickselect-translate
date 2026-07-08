@@ -16,6 +16,7 @@ const POPUP_IDS = [
   "sourceLang",
   "targetLang",
   "translateButton",
+  "openGoogleTranslateButton",
   "resultBox",
   "resultText",
   "candidateText",
@@ -112,6 +113,25 @@ test("popup translate renders result and candidate groups", async () => {
   assert.equal(elements.get("#candidateText").hidden, false);
   assert.equal(elements.get("#candidateText").children[0].children[0].textContent, "noun");
   assert.equal(elements.get("#statusText").textContent, "");
+});
+
+test("popup opens source text in Google Translate", async () => {
+  const messages = [];
+  const { api, elements } = await loadPopup(message => {
+    messages.push(message);
+    if (message.type === "STJ_GET_SETTINGS") return { sourceLang: "en", targetLang: "zh-TW", themeMode: "auto", fontSize: 16 };
+    return { ok: true };
+  });
+
+  elements.get("#sourceText").value = "hello";
+  await api.openInGoogleTranslate();
+
+  assert.deepEqual(plain(messages.find(message => message.type === "STJ_OPEN_GOOGLE_TRANSLATE")), {
+    type: "STJ_OPEN_GOOGLE_TRANSLATE",
+    text: "hello",
+    sourceLang: "en",
+    targetLang: "zh-TW"
+  });
 });
 
 test("popup applies appearance settings and responds to storage changes", async () => {
