@@ -236,10 +236,6 @@ async function translate() {
 
 async function openInGoogleTranslate() {
   const text = sourceText.value.trim();
-  if (!text) {
-    showStatus(t("statusEnterText", "Enter text to translate."), true);
-    return;
-  }
 
   await chrome.runtime.sendMessage({
     type: "STJ_OPEN_GOOGLE_TRANSLATE",

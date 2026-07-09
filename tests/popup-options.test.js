@@ -134,6 +134,26 @@ test("popup opens source text in Google Translate", async () => {
   });
 });
 
+test("popup opens blank Google Translate page for empty source text", async () => {
+  const messages = [];
+  const { api, elements } = await loadPopup(message => {
+    messages.push(message);
+    if (message.type === "STJ_GET_SETTINGS") return { sourceLang: "auto", targetLang: "browser", themeMode: "auto", fontSize: 16 };
+    return { ok: true };
+  });
+
+  elements.get("#sourceText").value = "   ";
+  await api.openInGoogleTranslate();
+
+  assert.equal(elements.get("#statusText").textContent, "");
+  assert.deepEqual(plain(messages.find(message => message.type === "STJ_OPEN_GOOGLE_TRANSLATE")), {
+    type: "STJ_OPEN_GOOGLE_TRANSLATE",
+    text: "",
+    sourceLang: "auto",
+    targetLang: "browser"
+  });
+});
+
 test("popup applies appearance settings and responds to storage changes", async () => {
   const { api, calls, document } = await loadPopup(message => {
     if (message.type === "STJ_GET_SETTINGS") return { sourceLang: "auto", targetLang: "zh-TW", themeMode: "dark", fontSize: 19 };
