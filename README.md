@@ -14,6 +14,19 @@ It keeps the core workflow small and plain:
 - configure source/target language, selection behavior, popup/bubble font size, and auto/light/dark theme from the options page.
 - localize extension UI through Chrome i18n messages for English, Traditional Chinese, and Simplified Chinese.
 
+## Screenshots
+
+### Translation Bubble
+![Translation Bubble](screenshots/01-translation-bubble.png)
+![Translation Bubble](screenshots/02-translation-bubble.png)
+![Translation Bubble](screenshots/03-translation-bubble.png)
+
+### Extension Popup Interface
+![Extension Popup](screenshots/04-popup.png)
+
+### Settings
+![Settings](screenshots/05-settings.png)
+
 ## Load in Chrome
 
 1. Open `chrome://extensions`.
