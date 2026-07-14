@@ -14,6 +14,8 @@ const DEFAULT_SETTINGS = Object.freeze({
 });
 
 const THEME_MODES = new Set(["auto", "light", "dark"]);
+const LOCAL_FILE_ORIGIN = "file:///*";
+const LOCAL_FILE_PERMISSION = "scripting";
 
 const LANGUAGES = [
   ["auto", "languageAuto", "Auto detect"],
@@ -61,9 +63,22 @@ init();
 async function init() {
   localizeDocument();
   fillLanguageOptions();
-  await loadSettings();
+  await Promise.all([loadSettings(), initializeLocalFileAccess()]);
   $("#saveButton").addEventListener("click", saveSettings);
   $("#resetButton").addEventListener("click", resetSettings);
+  $("#localFileToggleButton").addEventListener("click", requestLocalFileAccess);
+  $("#refreshLocalFileAccessButton").addEventListener("click", refreshLocalFileAccessStatus);
+  $("#openExtensionSettingsButton").addEventListener("click", openExtensionSettings);
+  $("#copyExtensionSettingsLinkButton").addEventListener("click", copyExtensionSettingsLink);
+
+  window.addEventListener?.("focus", refreshLocalFileAccessStatus);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.visibilityState || document.visibilityState === "visible") {
+      refreshLocalFileAccessStatus();
+    }
+  });
+  chrome.permissions.onAdded?.addListener(refreshLocalFileAccessStatus);
+  chrome.permissions.onRemoved?.addListener(refreshLocalFileAccessStatus);
 }
 
 function t(key, fallback, substitutions) {
@@ -118,6 +133,174 @@ async function loadSettings() {
   $("#fontSize").value = clampNumber(settings.fontSize, 12, 22, DEFAULT_SETTINGS.fontSize);
 }
 
+async function initializeLocalFileAccess() {
+  const result = await syncLocalFileContentScript();
+  if (result?.ok === false) {
+    renderLocalFileAccessError(new Error(result.errorMessage || "Local file content script sync failed."));
+    return;
+  }
+  await refreshLocalFileAccessStatus();
+}
+
+async function syncLocalFileContentScript() {
+  try {
+    return await chrome.runtime.sendMessage({ type: "STJ_SYNC_LOCAL_FILE_ACCESS" });
+  } catch (error) {
+    return {
+      ok: false,
+      errorMessage: String(error?.message || error)
+    };
+  }
+}
+
+async function getLocalFileAccessState() {
+  const permissionGranted = await chrome.permissions.contains({
+    permissions: [LOCAL_FILE_PERMISSION],
+    origins: [LOCAL_FILE_ORIGIN]
+  });
+  const fileSchemeAllowed = await chrome.extension.isAllowedFileSchemeAccess();
+
+  return { permissionGranted, fileSchemeAllowed };
+}
+
+async function refreshLocalFileAccessStatus() {
+  setLocalFileStatusLoading();
+  try {
+    renderLocalFileAccessState(await getLocalFileAccessState());
+  } catch (error) {
+    renderLocalFileAccessError(error);
+  }
+}
+
+function setLocalFileStatusLoading() {
+  const toggleButton = $("#localFileToggleButton");
+  $("#localFileStatus").className = "permission-status is-loading";
+  $("#localFileStatusTitle").textContent = t("localFileStatusCheckingTitle", "Checking status...");
+  $("#localFileStatusDescription").textContent = t(
+    "localFileStatusCheckingDescription",
+    "Checking the local file permission and Chrome file URL access setting."
+  );
+  toggleButton.disabled = true;
+  $("#refreshLocalFileAccessButton").disabled = true;
+}
+
+function renderLocalFileAccessState({ permissionGranted, fileSchemeAllowed }) {
+  const status = $("#localFileStatus");
+  const title = $("#localFileStatusTitle");
+  const description = $("#localFileStatusDescription");
+  const toggleButton = $("#localFileToggleButton");
+  const instructions = $("#localFileInstructions");
+
+  toggleButton.disabled = false;
+  $("#refreshLocalFileAccessButton").disabled = false;
+
+  if (!fileSchemeAllowed) {
+    status.className = "permission-status is-warning";
+    title.textContent = permissionGranted
+      ? t("localFileEnabledNeedsAccessTitle", "Enabled, but file URL access is off")
+      : t("localFileNeedsAccessTitle", "Allow access to file URLs is off");
+    description.textContent = permissionGranted
+      ? t(
+        "localFileEnabledNeedsAccessDescription",
+        "Chrome's “Allow access to file URLs” switch is still off. Turn it on to use this feature."
+      )
+      : t(
+        "localFileNeedsAccessDescription",
+        "Turn on Chrome's “Allow access to file URLs” switch before enabling local file translation."
+      );
+    toggleButton.hidden = true;
+    instructions.hidden = false;
+    return;
+  }
+
+  if (!permissionGranted) {
+    status.className = "permission-status is-disabled";
+    title.textContent = t("localFileDisabledTitle", "Not enabled");
+    description.textContent = t(
+      "localFileDisabledDescription",
+      "Enable this feature to translate selected text on local file pages."
+    );
+    toggleButton.textContent = t("enableLocalFileTranslation", "Enable local file translation");
+    toggleButton.hidden = false;
+    instructions.hidden = true;
+    return;
+  }
+
+  toggleButton.hidden = true;
+
+  status.className = "permission-status is-enabled";
+  title.textContent = t("localFileEnabledTitle", "Enabled and ready");
+  description.textContent = t(
+    "localFileEnabledDescription",
+    "Selected-text translation is available on supported file:// local file pages."
+  );
+  instructions.hidden = true;
+}
+
+function renderLocalFileAccessError(error) {
+  const toggleButton = $("#localFileToggleButton");
+  $("#localFileStatus").className = "permission-status is-error";
+  $("#localFileStatusTitle").textContent = t("localFileStatusErrorTitle", "Could not check local file access");
+  $("#localFileStatusDescription").textContent = t(
+    "localFileStatusErrorDescription",
+    "Reload the options page and try again."
+  );
+  toggleButton.disabled = false;
+  toggleButton.textContent = t("enableLocalFileTranslation", "Enable local file translation");
+  toggleButton.hidden = false;
+  $("#refreshLocalFileAccessButton").disabled = false;
+  $("#localFileInstructions").hidden = true;
+  console.warn("Failed to inspect local file access", error);
+}
+
+async function requestLocalFileAccess() {
+  setLocalFileStatusLoading();
+  try {
+    const currentState = await getLocalFileAccessState();
+    if (!currentState.fileSchemeAllowed) {
+      renderLocalFileAccessState(currentState);
+      return;
+    }
+
+    const granted = await chrome.permissions.request({
+      permissions: [LOCAL_FILE_PERMISSION],
+      origins: [LOCAL_FILE_ORIGIN]
+    });
+    if (granted) {
+      const result = await syncLocalFileContentScript();
+      if (result?.ok === false) throw new Error(result.errorMessage || "Local file content script sync failed.");
+    } else {
+      showStatus(t("localFilePermissionNotGranted", "Local file permission was not granted."));
+    }
+    await refreshLocalFileAccessStatus();
+  } catch (error) {
+    renderLocalFileAccessError(error);
+  }
+}
+
+function getExtensionSettingsUrl() {
+  return `chrome://extensions/?id=${chrome.runtime.id}`;
+}
+
+function openExtensionSettings() {
+  chrome.tabs.create({ url: getExtensionSettingsUrl(), active: true });
+}
+
+async function copyExtensionSettingsLink() {
+  const button = $("#copyExtensionSettingsLinkButton");
+  const originalText = t("copySettingsLink", "Copy settings link");
+
+  try {
+    await navigator.clipboard.writeText(getExtensionSettingsUrl());
+    button.textContent = t("copiedSettingsLink", "Copied");
+    setTimeout(() => {
+      button.textContent = originalText;
+    }, 1800);
+  } catch (error) {
+    showStatus(t("localFileCopyLinkFailed", "Could not copy the settings link."));
+  }
+}
+
 async function saveSettings() {
   await chrome.storage.local.set(readForm());
   showStatus(t("statusSaved", "Saved."));
@@ -164,11 +347,24 @@ if (globalThis.__QST_TEST__) {
     LANGUAGES,
     TARGET_LANGUAGES,
     THEME_MODES,
+    LOCAL_FILE_ORIGIN,
+    LOCAL_FILE_PERMISSION,
     t,
     formatFallback,
     localizeDocument,
     fillLanguageOptions,
     loadSettings,
+    initializeLocalFileAccess,
+    syncLocalFileContentScript,
+    getLocalFileAccessState,
+    refreshLocalFileAccessStatus,
+    setLocalFileStatusLoading,
+    renderLocalFileAccessState,
+    renderLocalFileAccessError,
+    requestLocalFileAccess,
+    getExtensionSettingsUrl,
+    openExtensionSettings,
+    copyExtensionSettingsLink,
     saveSettings,
     resetSettings,
     readForm,

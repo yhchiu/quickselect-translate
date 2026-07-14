@@ -48,6 +48,11 @@ header p {
   color: var(--muted);
 }
 
+.panel-description {
+  margin: -4px 0 14px;
+  color: var(--muted);
+}
+
 .panel {
   margin-bottom: 14px;
   padding: 18px;
@@ -99,6 +104,83 @@ input[type="number"] {
   height: 16px;
 }
 
+.permission-status {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--soft);
+}
+
+.permission-status strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 15px;
+}
+
+.permission-status p {
+  color: #475569;
+}
+
+.permission-status.is-enabled {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.permission-status.is-enabled strong {
+  color: #166534;
+}
+
+.permission-status.is-warning,
+.permission-status.is-disabled {
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+
+.permission-status.is-warning strong,
+.permission-status.is-disabled strong {
+  color: #c2410c;
+}
+
+.permission-status.is-error {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.permission-status.is-error strong {
+  color: #b91c1c;
+}
+
+.permission-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.permission-guide {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-left: 4px solid #fb923c;
+  border-radius: 6px;
+  background: #fff7ed;
+}
+
+.permission-guide-warning {
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.permission-guide ol {
+  margin: 12px 0 0;
+  padding-left: 22px;
+  color: #475569;
+}
+
+.permission-guide li + li {
+  margin-top: 6px;
+}
+
 footer {
   display: flex;
   align-items: center;
@@ -119,6 +201,11 @@ button {
 
 button:hover {
   background: var(--accent-dark);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 button.secondary {

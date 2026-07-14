@@ -28,6 +28,30 @@ const POPUP_IDS = [
   "optionsButton"
 ];
 
+const OPTIONS_IDS = [
+  "sourceLang",
+  "targetLang",
+  "showSelectionButton",
+  "translateImmediately",
+  "buttonOffsetX",
+  "buttonOffsetY",
+  "maxTextLength",
+  "openPageTranslationInCurrentTab",
+  "themeMode",
+  "fontSize",
+  "localFileStatus",
+  "localFileStatusTitle",
+  "localFileStatusDescription",
+  "localFileToggleButton",
+  "refreshLocalFileAccessButton",
+  "localFileInstructions",
+  "openExtensionSettingsButton",
+  "copyExtensionSettingsLinkButton",
+  "saveButton",
+  "resetButton",
+  "statusText"
+];
+
 const EXPECTED_LANGUAGE_VALUES = [
   "ar",
   "bn",
@@ -202,23 +226,8 @@ test("popup speech reports unsupported browser and otherwise speaks", async () =
 });
 
 test("options readForm clamps numeric settings and reset restores defaults", async () => {
-  const ids = [
-    "sourceLang",
-    "targetLang",
-    "showSelectionButton",
-    "translateImmediately",
-    "buttonOffsetX",
-    "buttonOffsetY",
-    "maxTextLength",
-    "openPageTranslationInCurrentTab",
-    "themeMode",
-    "fontSize",
-    "saveButton",
-    "resetButton",
-    "statusText"
-  ];
   const { chrome, storageData } = createChromeMock({ storage: { targetLang: "ja" } });
-  const { document, elements } = createDom(ids);
+  const { document, elements } = createDom(OPTIONS_IDS);
   const context = createBaseContext({ chrome, document });
   loadScript("options.js", context);
   await flushAsync();
@@ -262,4 +271,52 @@ test("options readForm clamps numeric settings and reset restores defaults", asy
   assert.equal(storageData.themeMode, "auto");
   assert.equal(storageData.fontSize, 16);
   assert.equal(elements.get("#statusText").textContent, "Defaults restored.");
+});
+
+test("options requires Chrome file URL access before requesting optional file permission", async () => {
+  const mock = createChromeMock({
+    runtimeMessageHandler: message => message.type === "STJ_SYNC_LOCAL_FILE_ACCESS" ? { ok: true } : {},
+    fileSchemeAccess: false
+  });
+  const { document, elements } = createDom(OPTIONS_IDS);
+  const context = createBaseContext({ chrome: mock.chrome, document });
+  loadScript("options.js", context);
+  await flushAsync();
+
+  const api = context.__QST_OPTIONS_TESTS__;
+  await api.refreshLocalFileAccessStatus();
+  assert.equal(elements.get("#localFileStatusTitle").textContent, "Allow access to file URLs is off");
+  assert.equal(elements.get("#localFileToggleButton").hidden, true);
+  assert.equal(elements.get("#localFileInstructions").hidden, false);
+
+  await api.requestLocalFileAccess();
+  assert.equal(mock.calls.permissionsRequest.length, 0);
+  assert.equal(elements.get("#localFileInstructions").hidden, false);
+
+  api.openExtensionSettings();
+  assert.equal(
+    mock.calls.tabsCreate[0].url,
+    "chrome://extensions/?id=abcdefghijklmnopabcdefghijklmnop"
+  );
+
+  mock.extensionState.fileSchemeAccess = true;
+  await api.refreshLocalFileAccessStatus();
+  assert.equal(elements.get("#localFileStatusTitle").textContent, "Not enabled");
+  assert.equal(elements.get("#localFileToggleButton").hidden, false);
+  assert.equal(elements.get("#localFileInstructions").hidden, true);
+
+  await api.requestLocalFileAccess();
+  assert.deepEqual(plain(mock.calls.permissionsRequest[0]), {
+    permissions: ["scripting"],
+    origins: ["file:///*"]
+  });
+  assert.equal(mock.grantedOrigins.has("file:///*"), true);
+  assert.equal(mock.grantedPermissions.has("scripting"), true);
+  assert.equal(elements.get("#localFileStatusTitle").textContent, "Enabled and ready");
+  assert.equal(elements.get("#localFileInstructions").hidden, true);
+
+  await api.copyExtensionSettingsLink();
+  assert.deepEqual(context.navigator.clipboard.writes, [
+    "chrome://extensions/?id=abcdefghijklmnopabcdefghijklmnop"
+  ]);
 });

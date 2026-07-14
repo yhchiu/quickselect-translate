@@ -12,6 +12,7 @@ It keeps the core workflow small and plain:
 - listen to source text or translated text with browser speech synthesis;
 - open full-page translation through Google Translate;
 - configure source/target language, selection behavior, popup/bubble font size, and auto/light/dark theme from the options page.
+- optionally enable selected-text translation on supported local `file://` pages without requesting file access at installation time;
 - localize extension UI through Chrome i18n messages for English, Traditional Chinese, and Simplified Chinese.
 
 ## Screenshots
@@ -35,6 +36,12 @@ It keeps the core workflow small and plain:
 4. Select this extension folder.
 
 No `npm install` or build step is required.
+
+## Local file translation
+
+Local file access is optional and disabled by default. Open the options page and find **Local File Translation**. If Chrome reports that file URL access is off, open the extension details page from the provided link and turn on **Allow access to file URLs** first. Return to the options page, click **Enable local file translation**, then reload or reopen the local file page.
+
+The extension registers its `file:///*` content script only while the optional permissions are granted and Chrome file URL access is enabled. If the permission is revoked or file URL access is turned off, the local-file content script is unregistered automatically.
 
 ## Translation backend
 
@@ -64,7 +71,7 @@ Run all tests from this folder:
 node --test tests/*.test.js
 ```
 
-The tests use mocked Chrome extension APIs, mocked DOM objects, and mocked network responses. They cover translation parsing and errors, request caching, context menu routing, Google Translate URL generation, translation bubble helpers, hover auto-hide behavior, appearance setting updates, copy success feedback, speech synthesis helpers, popup rendering, options form handling, and i18n locale consistency.
+The tests use mocked Chrome extension APIs, mocked DOM objects, and mocked network responses. They cover translation parsing and errors, request caching, context menu routing, Google Translate URL generation, translation bubble helpers, hover auto-hide behavior, appearance setting updates, copy success feedback, speech synthesis helpers, popup rendering, options form handling, optional local-file permission state, dynamic content-script registration, and i18n locale consistency.
 
 ## License
 

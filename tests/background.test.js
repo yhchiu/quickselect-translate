@@ -9,15 +9,30 @@ const {
   plain
 } = require("./test-utils");
 
-function loadBackground({ storage, fetchImpl, uiLanguage } = {}) {
-  const { chrome, calls, storageData } = createChromeMock({ storage });
+function loadBackground({
+  storage,
+  fetchImpl,
+  uiLanguage,
+  permissionOrigins,
+  permissionNames,
+  fileSchemeAccess,
+  registeredContentScripts
+} = {}) {
+  const mock = createChromeMock({
+    storage,
+    permissionOrigins,
+    permissionNames,
+    fileSchemeAccess,
+    registeredContentScripts
+  });
+  const { chrome, calls, storageData } = mock;
   if (uiLanguage !== undefined) chrome.i18n = { getUILanguage: () => uiLanguage };
   const context = createBaseContext({
     chrome,
     fetch: fetchImpl || (async () => ({ ok: true, status: 200, json: async () => ({}) }))
   });
   loadScript("background.js", context);
-  return { api: context.__QST_BACKGROUND_TESTS__, chrome, calls, storageData, context };
+  return { api: context.__QST_BACKGROUND_TESTS__, chrome, calls, storageData, context, ...mock };
 }
 
 test("ensureDefaultSettings writes only missing defaults", async () => {
@@ -53,6 +68,85 @@ test("createContextMenus creates selection, page, and link menus", () => {
     calls.contextMenusCreate.map(item => item.id),
     ["stj-translate-selection", "stj-translate-page", "stj-translate-link"]
   );
+});
+
+test("local file sync stays disabled when the optional scripting API is unavailable", async () => {
+  const { api, chrome } = loadBackground();
+  delete chrome.scripting;
+
+  const result = await api.syncLocalFileContentScript();
+
+  assert.deepEqual(plain(result), {
+    ok: true,
+    permissionGranted: false,
+    registered: false
+  });
+});
+
+test("local file content script is registered only while optional file access is granted", async () => {
+  const { api, calls, grantedOrigins, grantedPermissions, registeredScripts } = loadBackground({
+    fileSchemeAccess: true
+  });
+
+  const disabled = await api.syncLocalFileContentScript();
+  assert.deepEqual(plain(disabled), {
+    ok: true,
+    permissionGranted: false,
+    registered: false
+  });
+  assert.equal(calls.scriptingRegister.length, 0);
+
+  grantedOrigins.add(api.LOCAL_FILE_ORIGIN);
+  grantedPermissions.add(api.LOCAL_FILE_PERMISSION);
+  const enabled = await api.syncLocalFileContentScript();
+  assert.deepEqual(plain(enabled), {
+    ok: true,
+    permissionGranted: true,
+    registered: true
+  });
+  assert.equal(calls.scriptingRegister.length, 1);
+  assert.deepEqual(plain(registeredScripts.get(api.LOCAL_FILE_CONTENT_SCRIPT_ID)), {
+    id: "qst-local-file-content",
+    matches: ["file:///*"],
+    js: ["content.js"],
+    css: ["content.css"],
+    allFrames: true,
+    persistAcrossSessions: true,
+    runAt: "document_idle"
+  });
+
+  grantedOrigins.delete(api.LOCAL_FILE_ORIGIN);
+  grantedPermissions.delete(api.LOCAL_FILE_PERMISSION);
+  const removed = await api.syncLocalFileContentScript();
+  assert.equal(removed.registered, false);
+  assert.equal(calls.scriptingUnregister.length, 1);
+  assert.equal(registeredScripts.has(api.LOCAL_FILE_CONTENT_SCRIPT_ID), false);
+});
+
+test("local file sync does not register scripts while Chrome file URL access is off", async () => {
+  const existingScript = {
+    id: "qst-local-file-content",
+    matches: ["file:///*"],
+    js: ["content.js"],
+    css: ["content.css"]
+  };
+  const { api, calls, registeredScripts } = loadBackground({
+    permissionOrigins: ["file:///*"],
+    permissionNames: ["scripting"],
+    fileSchemeAccess: false,
+    registeredContentScripts: [existingScript]
+  });
+
+  const result = await api.syncLocalFileContentScript();
+
+  assert.deepEqual(plain(result), {
+    ok: true,
+    permissionGranted: true,
+    registered: false
+  });
+  assert.equal(calls.scriptingRegister.length, 0);
+  assert.equal(calls.scriptingUnregister.length, 1);
+  assert.equal(registeredScripts.has(api.LOCAL_FILE_CONTENT_SCRIPT_ID), false);
 });
 
 test("translateWithGoogle parses sentence text and dictionary groups", async () => {
@@ -209,5 +303,13 @@ test("runtime message listener handles options and async translate messages", as
   assert.equal(listener({ type: "STJ_TRANSLATE", text: "hello" }, {}, value => { response = value; }), true);
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(response.resultText, "ok");
+
+  assert.equal(listener({ type: "STJ_SYNC_LOCAL_FILE_ACCESS" }, {}, value => { response = value; }), true);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(plain(response), {
+    ok: true,
+    permissionGranted: false,
+    registered: false
+  });
   assert.ok(context.__QST_BACKGROUND_TESTS__);
 });

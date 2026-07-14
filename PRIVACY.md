@@ -4,6 +4,8 @@ QuickSelect Translate does not collect analytics, telemetry, or translation hist
 
 Text is sent to the configured third-party translation service, currently Google Translate, only when a translation is requested from the popup, floating selection UI, context menu, keyboard shortcut, or the optional immediate-translation setting. Full-page translation opens the configured page translation provider, currently Google Translate, with the current page or link URL. The "Open in Google Translate" action opens Google Translate with the selected text in the URL.
 
+Local `file://` access is an optional feature that is disabled by default. If enabled, the extension can run its selected-text translation interface on supported local file pages. The extension does not upload an entire local file; only text that the user explicitly requests to translate is sent to Google Translate under the same rules described above.
+
 Settings such as source language, target language, selection behavior, theme, font size, and maximum text length are stored locally with chrome.storage.local. Translation results may be cached in extension memory during the current browser session to avoid repeated requests, but they are not persisted by this extension.
 
 Pronunciation uses the browser's Web Speech API instead of a separate Google audio endpoint.

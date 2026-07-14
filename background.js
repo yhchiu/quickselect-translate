@@ -19,6 +19,10 @@ const MENU_IDS = Object.freeze({
   link: "stj-translate-link"
 });
 
+const LOCAL_FILE_ORIGIN = "file:///*";
+const LOCAL_FILE_PERMISSION = "scripting";
+const LOCAL_FILE_CONTENT_SCRIPT_ID = "qst-local-file-content";
+
 const TARGET_LANG_FALLBACK = "zh-TW";
 const SUPPORTED_BROWSER_TARGET_LANGS = new Set([
   "ar",
@@ -52,6 +56,7 @@ const SUPPORTED_BROWSER_TARGET_LANGS = new Set([
 ]);
 
 const memoryCache = new Map();
+let localFileSyncQueue = Promise.resolve();
 
 function t(key, fallback, substitutions) {
   const message = chrome.i18n?.getMessage?.(key, substitutions);
@@ -65,12 +70,22 @@ function formatFallback(fallback, substitutions) {
 
 chrome.runtime.onInstalled.addListener(async () => {
   await ensureDefaultSettings();
+  await queueLocalFileContentScriptSync();
   createContextMenus();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
   await ensureDefaultSettings();
+  await queueLocalFileContentScriptSync();
   createContextMenus();
+});
+
+chrome.permissions.onAdded.addListener(() => {
+  queueLocalFileContentScriptSync();
+});
+
+chrome.permissions.onRemoved.addListener(() => {
+  queueLocalFileContentScriptSync();
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -129,6 +144,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return false;
   }
 
+  if (message.type === "STJ_SYNC_LOCAL_FILE_ACCESS") {
+    queueLocalFileContentScriptSync().then(sendResponse);
+    return true;
+  }
+
   return false;
 });
 
@@ -143,6 +163,70 @@ async function ensureDefaultSettings() {
   if (Object.keys(missing).length) {
     await chrome.storage.local.set(missing);
   }
+}
+
+function queueLocalFileContentScriptSync() {
+  localFileSyncQueue = localFileSyncQueue
+    .catch(() => undefined)
+    .then(syncLocalFileContentScript);
+  return localFileSyncQueue;
+}
+
+async function syncLocalFileContentScript() {
+  try {
+    const permissionGranted = await chrome.permissions.contains({
+      permissions: [LOCAL_FILE_PERMISSION],
+      origins: [LOCAL_FILE_ORIGIN]
+    });
+    const fileSchemeAllowed = await chrome.extension.isAllowedFileSchemeAccess();
+    const shouldRegister = permissionGranted && fileSchemeAllowed;
+    const scripting = chrome.scripting;
+
+    if (!scripting?.getRegisteredContentScripts) {
+      if (!shouldRegister) {
+        return {
+          ok: true,
+          permissionGranted,
+          registered: false
+        };
+      }
+      throw new Error("The scripting API is unavailable after local file access was granted.");
+    }
+
+    const registeredScripts = await scripting.getRegisteredContentScripts({
+      ids: [LOCAL_FILE_CONTENT_SCRIPT_ID]
+    });
+    const isRegistered = registeredScripts.length > 0;
+
+    if (shouldRegister && !isRegistered) {
+      await scripting.registerContentScripts([getLocalFileContentScriptDefinition()]);
+    } else if (!shouldRegister && isRegistered) {
+      await scripting.unregisterContentScripts({ ids: [LOCAL_FILE_CONTENT_SCRIPT_ID] });
+    }
+
+    return {
+      ok: true,
+      permissionGranted,
+      registered: shouldRegister
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      errorMessage: String(error?.message || error)
+    };
+  }
+}
+
+function getLocalFileContentScriptDefinition() {
+  return {
+    id: LOCAL_FILE_CONTENT_SCRIPT_ID,
+    matches: [LOCAL_FILE_ORIGIN],
+    js: ["content.js"],
+    css: ["content.css"],
+    allFrames: true,
+    persistAcrossSessions: true,
+    runAt: "document_idle"
+  };
 }
 
 async function getSettings() {
@@ -354,10 +438,16 @@ if (globalThis.__QST_TEST__) {
   globalThis.__QST_BACKGROUND_TESTS__ = {
     DEFAULT_SETTINGS,
     MENU_IDS,
+    LOCAL_FILE_ORIGIN,
+    LOCAL_FILE_PERMISSION,
+    LOCAL_FILE_CONTENT_SCRIPT_ID,
     memoryCache,
     TARGET_LANG_FALLBACK,
     SUPPORTED_BROWSER_TARGET_LANGS,
     ensureDefaultSettings,
+    queueLocalFileContentScriptSync,
+    syncLocalFileContentScript,
+    getLocalFileContentScriptDefinition,
     getSettings,
     createContextMenus,
     handleTranslate,

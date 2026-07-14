@@ -9,6 +9,8 @@
     "https://translate.googleapis.com/*",
     "https://translate.google.com/*"
   ],
+  "optional_permissions": ["scripting"],
+  "optional_host_permissions": ["file:///*"],
   "background": {
     "service_worker": "background.js"
   },

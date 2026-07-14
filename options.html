@@ -28,6 +28,24 @@
       </section>
 
       <section class="panel">
+        <h2 data-i18n="appearanceSection">Appearance</h2>
+        <div class="grid">
+          <label>
+            <span data-i18n="themeLabel">Theme</span>
+            <select id="themeMode">
+              <option value="auto" data-i18n="themeAuto">Auto</option>
+              <option value="light" data-i18n="themeLight">Light</option>
+              <option value="dark" data-i18n="themeDark">Dark</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="translationFontSize">Translation font size</span>
+            <input id="fontSize" type="number" min="12" max="22" step="1">
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
         <h2 data-i18n="selectionUiSection">Selection UI</h2>
         <label class="check">
           <input id="showSelectionButton" type="checkbox">
@@ -61,21 +79,45 @@
         </label>
       </section>
 
-      <section class="panel">
-        <h2 data-i18n="appearanceSection">Appearance</h2>
-        <div class="grid">
-          <label>
-            <span data-i18n="themeLabel">Theme</span>
-            <select id="themeMode">
-              <option value="auto" data-i18n="themeAuto">Auto</option>
-              <option value="light" data-i18n="themeLight">Light</option>
-              <option value="dark" data-i18n="themeDark">Dark</option>
-            </select>
-          </label>
-          <label>
-            <span data-i18n="translationFontSize">Translation font size</span>
-            <input id="fontSize" type="number" min="12" max="22" step="1">
-          </label>
+      <section class="panel" id="localFileSection">
+        <h2 data-i18n="localFileTranslationSection">Local File Translation</h2>
+        <p class="panel-description" data-i18n="localFileIntro">
+          Translate selected text on supported local file pages opened with file://. This optional feature requests access only when you enable it.
+        </p>
+
+        <div id="localFileStatus" class="permission-status is-loading" role="status" aria-live="polite">
+          <strong id="localFileStatusTitle" data-i18n="localFileStatusCheckingTitle">Checking status...</strong>
+          <p id="localFileStatusDescription" data-i18n="localFileStatusCheckingDescription">
+            Checking the local file permission and Chrome file URL access setting.
+          </p>
+        </div>
+
+        <div class="permission-actions">
+          <button id="localFileToggleButton" type="button" disabled data-i18n="enableLocalFileTranslation">
+            Enable local file translation
+          </button>
+          <button id="refreshLocalFileAccessButton" type="button" class="secondary" data-i18n="refreshAccessStatus">
+            Check again
+          </button>
+        </div>
+
+        <div id="localFileInstructions" class="permission-guide" hidden>
+          <p class="permission-guide-warning" data-i18n="localFileAccessGuideIntro">
+            Action required: turn on “Allow access to file URLs” before enabling or using this feature.
+          </p>
+          <ol>
+            <li data-i18n="localFileAccessStep1">Open this extension's details page.</li>
+            <li data-i18n="localFileAccessStep2">Turn on “Allow access to file URLs”.</li>
+            <li data-i18n="localFileAccessStep3">Return here and click Enable local file translation if shown, then reload or reopen the local file page.</li>
+          </ol>
+          <div class="permission-actions">
+            <button id="openExtensionSettingsButton" type="button" class="secondary" data-i18n="openExtensionSettings">
+              Open extension settings
+            </button>
+            <button id="copyExtensionSettingsLinkButton" type="button" class="secondary" data-i18n="copySettingsLink">
+              Copy settings link
+            </button>
+          </div>
         </div>
       </section>
 

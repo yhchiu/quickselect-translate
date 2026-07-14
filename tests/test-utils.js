@@ -164,28 +164,49 @@ class FakeElement {
   }
 }
 
-function createChromeMock({ storage = {}, runtimeMessageHandler } = {}) {
+function createChromeMock({
+  storage = {},
+  runtimeMessageHandler,
+  permissionOrigins = [],
+  permissionNames = [],
+  permissionRequestResult = true,
+  fileSchemeAccess = false,
+  registeredContentScripts = []
+} = {}) {
   const calls = {
     contextMenusCreate: [],
     contextMenusRemoveAll: 0,
     tabsCreate: [],
     tabsUpdate: [],
     tabsSendMessage: [],
+    runtimeMessagesSent: [],
     optionsOpened: 0,
     storageSet: [],
+    permissionsContains: [],
+    permissionsRequest: [],
+    permissionsRemove: [],
+    scriptingRegister: [],
+    scriptingUnregister: [],
     listeners: {
       onInstalled: [],
       onStartup: [],
       contextMenusClicked: [],
       commands: [],
       runtimeMessages: [],
-      storageChanged: []
+      storageChanged: [],
+      permissionsAdded: [],
+      permissionsRemoved: []
     }
   };
 
   const storageData = { ...storage };
+  const grantedOrigins = new Set(permissionOrigins);
+  const grantedPermissions = new Set(permissionNames);
+  const registeredScripts = new Map(registeredContentScripts.map(script => [script.id, { ...script }]));
+  const extensionState = { fileSchemeAccess: Boolean(fileSchemeAccess) };
   const chrome = {
     runtime: {
+      id: "abcdefghijklmnopabcdefghijklmnop",
       lastError: null,
       onInstalled: { addListener: fn => calls.listeners.onInstalled.push(fn) },
       onStartup: { addListener: fn => calls.listeners.onStartup.push(fn) },
@@ -194,8 +215,65 @@ function createChromeMock({ storage = {}, runtimeMessageHandler } = {}) {
         calls.optionsOpened += 1;
       },
       sendMessage: message => {
+        calls.runtimeMessagesSent.push(message);
         if (runtimeMessageHandler) return Promise.resolve(runtimeMessageHandler(message));
         return Promise.resolve({});
+      }
+    },
+    extension: {
+      isAllowedFileSchemeAccess: async () => extensionState.fileSchemeAccess
+    },
+    permissions: {
+      onAdded: { addListener: fn => calls.listeners.permissionsAdded.push(fn) },
+      onRemoved: { addListener: fn => calls.listeners.permissionsRemoved.push(fn) },
+      contains: async request => {
+        calls.permissionsContains.push(request);
+        return (request.origins || []).every(origin => grantedOrigins.has(origin)) &&
+          (request.permissions || []).every(permission => grantedPermissions.has(permission));
+      },
+      request: async request => {
+        calls.permissionsRequest.push(request);
+        if ((request.origins || []).some(origin => origin.startsWith("file://")) && !extensionState.fileSchemeAccess) {
+          throw new Error("Extension must have file access enabled to request 'file:///*'.");
+        }
+        if (!permissionRequestResult) return false;
+        for (const origin of request.origins || []) grantedOrigins.add(origin);
+        for (const permission of request.permissions || []) grantedPermissions.add(permission);
+        for (const listener of calls.listeners.permissionsAdded) listener(request);
+        return true;
+      },
+      remove: async request => {
+        calls.permissionsRemove.push(request);
+        let removed = false;
+        for (const origin of request.origins || []) {
+          removed = grantedOrigins.delete(origin) || removed;
+        }
+        for (const permission of request.permissions || []) {
+          removed = grantedPermissions.delete(permission) || removed;
+        }
+        if (removed) {
+          for (const listener of calls.listeners.permissionsRemoved) listener(request);
+        }
+        return removed;
+      }
+    },
+    scripting: {
+      getRegisteredContentScripts: async ({ ids } = {}) => {
+        const selected = ids?.length
+          ? ids.map(id => registeredScripts.get(id)).filter(Boolean)
+          : Array.from(registeredScripts.values());
+        return selected.map(script => ({ ...script }));
+      },
+      registerContentScripts: async scripts => {
+        calls.scriptingRegister.push(scripts);
+        for (const script of scripts) {
+          if (registeredScripts.has(script.id)) throw new Error(`Duplicate script ID '${script.id}'`);
+          registeredScripts.set(script.id, { ...script });
+        }
+      },
+      unregisterContentScripts: async ({ ids } = {}) => {
+        calls.scriptingUnregister.push({ ids });
+        for (const id of ids || []) registeredScripts.delete(id);
       }
     },
     storage: {
@@ -236,7 +314,15 @@ function createChromeMock({ storage = {}, runtimeMessageHandler } = {}) {
     }
   };
 
-  return { chrome, calls, storageData };
+  return {
+    chrome,
+    calls,
+    storageData,
+    grantedOrigins,
+    grantedPermissions,
+    registeredScripts,
+    extensionState
+  };
 }
 
 function createDom(ids = []) {

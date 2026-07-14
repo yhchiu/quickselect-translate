@@ -30,3 +30,15 @@ test("i18n locale files exist and expose the same message keys", () => {
     }
   }
 });
+
+test("manifest keeps local file access optional and injects it dynamically", () => {
+  const manifest = readJson("manifest.json");
+
+  assert.deepEqual(manifest.optional_permissions, ["scripting"]);
+  assert.deepEqual(manifest.optional_host_permissions, ["file:///*"]);
+  assert.equal(
+    manifest.content_scripts.some(script => script.matches.includes("file:///*")),
+    false,
+    "file access should not be requested as a required static content-script host"
+  );
+});
