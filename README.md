@@ -4,6 +4,8 @@
 
 This is a Chrome extension for quickly translating selected text.
 
+[Available in the Chrome Web Store](https://chromewebstore.google.com/detail/quickselect-translate/dkgidkcamjobmmhdfmnkmadphjmcbnjk)
+
 It keeps the core workflow small and plain:
 
 - select text on a web page, then click the floating translate button;
@@ -18,24 +20,37 @@ It keeps the core workflow small and plain:
 ## Screenshots
 
 ### Translation Bubble
+
 ![Translation Bubble](screenshots/01-translation-bubble.png)
+
 ![Translation Bubble](screenshots/02-translation-bubble.png)
+
 ![Translation Bubble](screenshots/03-translation-bubble.png)
 
 ### Extension Popup Interface
+
 ![Extension Popup](screenshots/04-popup.png)
 
 ### Settings
+
 ![Settings](screenshots/05-settings.png)
 
-## Load in Chrome
+## Install
+
+### From Chrome Web Store (Recommended)
+
+Install directly from the Chrome Web Store: [QuickSelect Translate](https://chromewebstore.google.com/detail/quickselect-translate/dkgidkcamjobmmhdfmnkmadphjmcbnjk)
+
+1. Visit the Chrome Web Store link above
+2. Click "Add to Chrome" button
+3. Confirm the installation when prompted
+
+### From Source
 
 1. Open `chrome://extensions`.
-2. Enable Developer mode.
+2. Turn on **Developer mode**.
 3. Click **Load unpacked**.
-4. Select this extension folder.
-
-No `npm install` or build step is required.
+4. Select this project folder.
 
 ## Local file translation
 
